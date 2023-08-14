@@ -7,21 +7,15 @@ from os import path
 
 def render():
 
-	if 'part_ordered' not in ss:
-		ss['part_ordered'] = False
-	if 'part_cost' not in ss:
-		ss['part_cost'] = 0.0
-	
-	st.title('Purchasing Manager')
-	
 	st.title("Welcome to the Purchasing Manager Page!")
+
 	st.markdown(
-		"""
-		Your role revolves around monitoring the order quantities made by the :blue[Industrial Engineer], 
-		the annual demand, the ordering cost, and the holding cost. The :red[Economic Order Quantity (EOQ)] will
-		be calculated for you, and your task will be to give feedback to the :blue[Industrial Engineer] on their
-		performance.
-		""")
+        """
+        Your role revolves around monitoring the order quantities made by the :blue[Industrial Engineer], 
+        the annual demand, the ordering cost, and the holding cost. The :red[Economic Order Quantity (EOQ)] will
+        be calculated for you, and your task will be to give feedback to the :blue[Industrial Engineer] on their
+        performance.
+        """)
 
 
 	parts = ['Frame',
@@ -41,21 +35,13 @@ def render():
 			'Seat Post',
 			'Seat',
 			]
-    
+
 	st.markdown('---')
 	vendors = ['GoBike', 'FastBike', 'LazyBiker']
 	st.markdown('**:blue[Select Vendor]**')
-	# the vendor selection below can be referenced ss.vendor_choice
-	col1, col2 = st.columns(2)
-	with col1:
-		vendor = st.selectbox('Vendor', options=vendors, key='vendor_choice', label_visibility='collapsed')
-	with col2:
-		st.radio("Part", options = parts, key='part_choice')
-	st.button("Order Part", on_click=order_part)
-	
-	if ss.part_ordered:
-		st.write(f"The requested {ss.part_choice} will cost $ {ss.part_cost}")
-	
+	vendor = st.selectbox('Vendor',
+						options=vendors,
+						label_visibility='collapsed')
 	if vendor == 'GoBike':
 		seed = 123
 	elif vendor == 'FastBike':
@@ -85,8 +71,8 @@ def render():
 
 	st.markdown('---')
 	st.write('')
-	if path.isfile(ss.filepath+'orders.csv'):
-		orders = pd.read_csv(ss.filepath+'orders.csv')
+	if path.isfile('orders.csv'):
+		orders = pd.read_csv('orders.csv')
 		orders.index = list(range(1, len(orders)+1))
 		orders = orders.merge(eco_df, on='Part', how='left')
 		orders['Ordering Cost ($)'] *= orders['Qty']
@@ -109,12 +95,12 @@ def render():
 		st.markdown('---')
 
 
-		if path.isfile(ss.filepath+'vendors.csv'):
+		if path.isfile('vendors.csv'):
 			if st.button('Reset Vendor Selection!'):
-				os.system(ss.filepath+'rm vendors.csv')
+				os.system('rm vendors.csv')
 				vendor_df = pd.DataFrame(columns=['Part', 'Vendor'])
 			else:
-				vendor_df = pd.read_csv(ss.filepath+'vendors.csv')
+				vendor_df = pd.read_csv('vendors.csv')
 		else:
 			vendor_df = pd.DataFrame(columns=['Part', 'Vendor'])
 
@@ -134,14 +120,14 @@ def render():
 			vendor_df.loc[len(vendor_df), :] = [part_for_vendor, vendor_for_part]
 			vendor_df = vendor_df.drop_duplicates(subset='Part', keep='last')
 			vendor_df.index = list(range(1, len(vendor_df)+1))
-			vendor_df.to_csv(ss.filepath+'vendors.csv', index=False)
+			vendor_df.to_csv('vendors.csv', index=False)
 
 		if len(vendor_df) > 0:
 			st.dataframe(vendor_df, width=3000)
 
 		with st.expander('Give Feedback!'):
-			if path.isfile(ss.filepath+'purchasing_manager_feedback.txt'):
-				with open(ss.filepath+'purchasing_manager_feedback.txt', 'rb') as f:
+			if path.isfile('purchasing_manager_feedback'):
+				with open('purchasing_manager_feedback', 'rb') as f:
 					previous_feedback = f.read().decode()
 				feedback = st.text_area('feedback ...',
 										value=previous_feedback,
@@ -151,7 +137,7 @@ def render():
 				feedback = st.text_area('feedback ...',
 										value='Your feedback...',
 										label_visibility='collapsed')
-			with open(ss.filepath+'purchasing_manager_feedback.txt', 'w') as f:
+			with open('purchasing_manager_feedback', 'w') as f:
 				f.write(feedback)
 	
 	
